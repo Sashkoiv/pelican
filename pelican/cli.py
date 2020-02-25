@@ -6,7 +6,7 @@ from pelican import pelican
 from pelican import pyboard
 
 _board = None
-config_file = 'config.yaml'
+CONFIG_FILE = 'config.yaml'
 
 @click.group()
 @click.option(
@@ -69,7 +69,7 @@ def setup_config(**kwargs):
     pelican setup-config --cs 23 -s 500 -c 8
     '''
     path = os.path.dirname(__file__)
-    with open(os.path.join(path, config_file), 'w') as conf:
+    with open(os.path.join(path, CONFIG_FILE), 'w') as conf:
         conf.write(yaml.dump(kwargs))
 
     print(f'config successfull\n{kwargs}')
@@ -80,7 +80,9 @@ def dump(**kwargs):
     '''
     Gets the frame from CAN buffer.
     '''
-    print(f'dump\n{kwargs}')
+    board = pelican.Pelican(_board)
+    frame = board.dump(CONFIG_FILE)
+    print(frame)
 
 
 @cli.command()

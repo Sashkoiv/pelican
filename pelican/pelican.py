@@ -20,6 +20,15 @@
 # SOFTWARE.
 
 
+import os
+import yaml
+
+try:
+    from ampy.files import Files
+except Exception as e:
+    raise Exception(f'Cannot import ampy {e}')
+
+
 BUFFER_SIZE = 32  # Amount of data to read or write to the serial port at a time.
 # This is kept small because small chips and USB to serial
 # bridges usually have very small buffers.
@@ -37,7 +46,58 @@ class Pelican():
         it in.
         '''
         self._pyboard = pyboard
+        self.CAN_MODULE = 'mcpcan.py'
 
+
+    def _read_config(self, config: str) -> None:
+        '''
+        Read config file to get parameters of CAN initialization.
+        '''
+        path = os.path.dirname(__file__)
+        with open(os.path.join(path, config), 'r') as conf:
+            return yaml.load(conf, Loader=yaml.FullLoader)
+
+
+    def dump(self, config_file: str) -> None:
+        '''
+        Gets the message from CAN buffer.
+        '''
+
+        board = Files(self._pyboard)
+
+        ls = board.ls(long_format=False)
+
+        if ''.join(['/', self.CAN_MODULE]) not in ls:
+            print(f'The file `{self.CAN_MODULE}` is being written to the board.')
+            path = os.path.dirname(__file__)
+            with open(os.path.join(path, self.CAN_MODULE), "rb") as infile:
+                data = infile.read()
+            board.put(self.CAN_MODULE, data)
+
+        conf = self._read_config(config_file)
+
+        code = '''\
+from mcpcan import CAN
+can = CAN(cs={0})
+can.start(speed_cfg={1}, crystal={2}, filter={3}, listen_only={4})
+res = can.recv_msg()
+print(res)\
+'''.format(conf['cs'], conf['speed'], conf['crystal'], conf['filter'], conf['l'])
+
+        self._pyboard.enter_raw_repl()
+
+        for line in code.split('\n'):
+            result = self._pyboard.exec(line)
+        self._pyboard.exit_raw_repl()
+
+        return (result.decode())
+
+
+    def send(self) -> None:
+        '''
+        Sends the CAN message.
+        '''
+        ...
 
     def blink(self) -> None:
         '''
