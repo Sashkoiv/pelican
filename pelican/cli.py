@@ -1,10 +1,12 @@
 import click
+import yaml
+import os
 
-import pelican
-import pyboard
+from pelican import pelican
+from pelican import pyboard
 
 _board = None
-
+config_file = 'config.yaml'
 
 @click.group()
 @click.option(
@@ -66,6 +68,10 @@ def setup_config(**kwargs):
     Example:
     pelican setup-config --cs 23 -s 500 -c 8
     '''
+    path = os.path.dirname(__file__)
+    with open(os.path.join(path, config_file), 'w') as conf:
+        conf.write(yaml.dump(kwargs))
+
     print(f'setup-config\n{kwargs}')
 
 

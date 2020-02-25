@@ -1,2 +1,2 @@
-import cli
+from . import cli
 cli.main()
