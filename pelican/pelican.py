@@ -36,14 +36,11 @@ BUFFER_SIZE = 32  # Amount of data to read or write to the serial port at a time
 
 class Pelican():
     '''
-
+    Class to use micropython board as CAN interface.
     '''
     def __init__(self, pyboard) -> None:
         '''
-        Initialize the MicroPython board files class using the provided pyboard
-        instance. In most cases you should create a Pyboard instance (from
-        pyboard.py) which connects to a board over a serial connection and pass
-        it in.
+        Initialize the micropython board.
         '''
         self._pyboard = pyboard
         self.CAN_MODULE = 'mcpcan.py'
@@ -58,11 +55,10 @@ class Pelican():
             return yaml.load(conf, Loader=yaml.FullLoader)
 
 
-    def dump(self, config_file: str) -> None:
+    def _check_onboard_file(self) -> None:
         '''
-        Gets the message from CAN buffer.
+        Check wether the file exist on the board.
         '''
-
         board = Files(self._pyboard)
 
         ls = board.ls(long_format=False)
@@ -74,6 +70,16 @@ class Pelican():
                 data = infile.read()
             board.put(self.CAN_MODULE, data)
 
+
+    def dump(self, config_file: str) -> None:
+        '''
+        Gets the message from CAN buffer.
+
+        Example:
+        pelican -p /dev/ttyUSB0 -b 115200 dump
+        '''
+        self._check_onboard_file()
+
         conf = self._read_config(config_file)
 
         code = '''\
@@ -82,7 +88,11 @@ can = CAN(cs={0})
 can.start(speed_cfg={1}, crystal={2}, filter={3}, listen_only={4})
 res = can.recv_msg()
 print(res)\
-'''.format(conf['cs'], conf['speed'], conf['crystal'], conf['filter'], conf['l'])
+'''.format(conf['cs'],
+           conf['speed'],
+           conf['crystal'],
+           conf['filter'],
+           conf['l'])
 
         self._pyboard.enter_raw_repl()
 
@@ -93,15 +103,47 @@ print(res)\
         return (result.decode())
 
 
-    def send(self) -> None:
+    def send(self, message, config_file) -> None:
         '''
         Sends the CAN message.
+
+        Example:
+        pelican -p /dev/ttyUSB0 -b 115200 send -i 123 -d Hello111 -l8 -r False
         '''
-        ...
+        self._check_onboard_file()
+
+        conf = self._read_config(config_file)
+
+        # Make the data to appear as byte array
+        message['data'] = message['data'].encode('utf-8')
+
+        code = '''\
+from mcpcan import CAN
+can = CAN(cs={0})
+can.start(speed_cfg={1}, crystal={2}, filter={3}, listen_only={4})
+can.send_msg({5})\
+'''.format(conf['cs'],
+           conf['speed'],
+           conf['crystal'],
+           conf['filter'],
+           conf['l'],
+           message)
+
+        self._pyboard.enter_raw_repl()
+
+        for line in code.split('\n'):
+            result = self._pyboard.exec(line)
+        self._pyboard.exit_raw_repl()
+
+        return (result.decode())
+
 
     def blink(self) -> None:
         '''
         Blinks a built-in LED to approve the board is working well.
+
+        Example:
+        pelican -p /dev/ttyUSB0 -b 115200 blink
         '''
         code = '''\
 from machine import Pin

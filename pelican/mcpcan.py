@@ -7,7 +7,7 @@ class CAN:
     Implements the standard CAN communication protocol.
     '''
 
-    def __init__(self, cs: int = 27, interrupt: int = None) -> None:
+    def __init__(self, cs: int = 27) -> None:
         '''
         MCP2515 chip initialization
 
@@ -16,12 +16,11 @@ class CAN:
 
         CS default is pin 27
         '''
-        # Setting up SPI
         self.spi = SPI(1, 10000000, sck=Pin(14), mosi=Pin(13), miso=Pin(12))
         self.spi.init()
 
         self.cs = Pin(cs, Pin.OUT, value=1)
-        self.interrupt_pin = interrupt
+
         self._rx_buf = []
 
         # Software reset
@@ -33,19 +32,6 @@ class CAN:
         mode = self._spi_read_reg(b'\x0e')
         if (mode == 0):
             raise OSError("MCP2515 init failed (Cannot read any data).")
-
-
-    def subscribe(self, action: callable) -> None:
-        '''
-        The method takes a callable object as an input and performs an action
-        when externall interrupt triggers.
-        '''
-        if self.interrupt_pin:
-            self.int = Pin(self.interrupt_pin, Pin.IN)
-            self.int.irq(trigger=Pin.IRQ_FALLING, handler=action)
-        else:
-            raise Exception('Interrupt pin ({}) is either not set or not \
-correct'.format(self.interrupt_pin))
 
 
     def stop(self) -> None:

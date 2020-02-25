@@ -125,7 +125,8 @@ def send(**kwargs):
     Example:
     {'ext':False, 'id':0x18ff50e5, 'data':b'\x12\x34\x56\x78\x90\xab\xcd\xef', 'dlc':8, 'rtr':False}
     '''
-    print(f'send\n{kwargs}')
+    board = pelican.Pelican(_board)
+    board.send(kwargs, CONFIG_FILE)
 
 
 @cli.command()
