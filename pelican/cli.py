@@ -72,7 +72,7 @@ def setup_config(**kwargs):
     with open(os.path.join(path, config_file), 'w') as conf:
         conf.write(yaml.dump(kwargs))
 
-    print(f'setup-config\n{kwargs}')
+    print(f'config successfull\n{kwargs}')
 
 
 @cli.command()
@@ -127,16 +127,12 @@ def send(**kwargs):
 
 
 @cli.command()
-@click.argument(
-    "period",
-    default = 1,
-    type=click.INT
-)
 def blink(**kwargs):
     '''
     Blinks the built-in LED.
     '''
-    print(f'blink\n{kwargs}')
+    board = pelican.Pelican(_board)
+    board.blink()
 
 
 def main():
