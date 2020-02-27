@@ -3,7 +3,7 @@ import yaml
 import os
 
 from pelican import pelican
-from pelican import pyboard
+from ampy import pyboard
 
 _board = None
 CONFIG_FILE = 'config.yaml'
