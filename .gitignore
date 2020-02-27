@@ -134,3 +134,8 @@ config.yaml
 
 # IDE files and folders
 .vscode/
+
+# Pytest
+
+pytest_coverage/
+pytest_result.html

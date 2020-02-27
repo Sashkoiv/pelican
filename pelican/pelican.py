@@ -100,7 +100,7 @@ print(res)\
             result = self._pyboard.exec(line)
         self._pyboard.exit_raw_repl()
 
-        return (result.decode())
+        return result.decode()
 
 
     def send(self, message, config_file) -> None:
