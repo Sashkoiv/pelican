@@ -1,0 +1,21 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: pip3 install -r requirements.txt
+    - name: Run a one-line script
+      run: |
+        pip3 install -r tests/requirements.txt
+        pytest tests/ --mypy --flake8 --cov=pelican --cov-branch --cov-report=html:pytest_coverage --html=pytest_result.html --self-contained-html --cache-clear

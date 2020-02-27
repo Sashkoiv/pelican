@@ -1,6 +1,8 @@
 # peliCAN
 A simple wrapper to send and receive CAN frames with micropython board and MCP2515.
 
+![CI](https://github.com/Sashkoiv/pelican/workflows/CI/badge.svg?branch=master)
+
 ![Logo](doc/logo.jpg)
 
 ## Getting started

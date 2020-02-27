@@ -1,3 +1,4 @@
 click
+pyyaml
 pyserial
 adafruit-ampy
